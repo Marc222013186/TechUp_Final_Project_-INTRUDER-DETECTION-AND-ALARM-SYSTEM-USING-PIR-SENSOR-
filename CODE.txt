@@ -1,0 +1,56 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+// LCD setup
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+// Pins
+const int pirPin = A0;       // PIR motion sensor
+const int buzzerPin = 6;     // Buzzer
+const int ledPin = 7;        // Alarm LED
+
+int pirState = LOW;          // current PIR state
+int val = 50;                 // PIR reading
+
+void setup() {
+  pinMode(pirPin, INPUT);
+  pinMode(buzzerPin, OUTPUT);
+  pinMode(ledPin, OUTPUT);
+
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(0, 0);
+  lcd.print("Intruder Alarm");
+  delay(5000);
+  lcd.clear();
+
+  Serial.begin(9600);
+}
+
+void loop() {
+  val = digitalRead(pirPin);  // read PIR input
+
+  if (val == HIGH) {           // motion detected
+    if (pirState == LOW) {
+      Serial.println("Intruder Detected!");
+     // lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("someone is around⚠️");
+      digitalWrite(buzzerPin, HIGH);
+      digitalWrite(ledPin, HIGH);
+      pirState = HIGH;
+    }
+  } else {
+    if (pirState == HIGH) {    // no motion
+      Serial.println("Area Clear");
+     // lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("No motion");
+      digitalWrite(buzzerPin, LOW);
+      digitalWrite(ledPin, LOW);
+      pirState = LOW;
+    }
+  }
+
+  delay(5000);
+}
